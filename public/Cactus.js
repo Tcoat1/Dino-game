@@ -19,7 +19,6 @@ class Cactus {
   collideWith(sprite) {
     const adjustBy = 1.4;
 
-    // 충돌
     return (
       this.x < sprite.x + sprite.width / adjustBy &&
       this.x + this.width / adjustBy > sprite.x &&

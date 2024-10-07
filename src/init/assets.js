@@ -1,19 +1,16 @@
-import { rejects } from 'assert';
-import exp from 'constants';
-import { json } from 'express';
 import fs from 'fs';
-import path, { join, resolve } from 'path';
+import path from 'path';
 import { fileURLToPath } from 'url';
 
-let gameAssets = {};
-
 const __filename = fileURLToPath(import.meta.url);
+
 const __dirname = path.dirname(__filename);
 const basePath = path.join(__dirname, '../../public/assets');
+let gameAssets = {};
 
-const readFileAsync = (filemname) => {
+const readFileAsync = (filename) => {
   return new Promise((resolve, reject) => {
-    fs.readFile(path.join(basePath, filemname), 'utf-8', (err, data) => {
+    fs.readFile(path.join(basePath, filename), 'utf8', (err, data) => {
       if (err) {
         reject(err);
         return;
@@ -25,19 +22,18 @@ const readFileAsync = (filemname) => {
 
 export const loadGameAssets = async () => {
   try {
-    const [stages, items, item_unlocks] = await Promise.all([
+    const [stages, items, itemUnlocks] = await Promise.all([
       readFileAsync('stage.json'),
       readFileAsync('item.json'),
       readFileAsync('item_unlock.json'),
     ]);
-
-    gameAssets = { stages, items, item_unlocks };
+    gameAssets = { stages, items, itemUnlocks };
     return gameAssets;
-  } catch (err) {
-    throw new Error('failed to load game assets' + err.message);
+  } catch (error) {
+    throw new Error('Failed to load game assets: ' + error.message);
   }
 };
 
-export const getgameAssets = () => {
+export const getGameAssets = () => {
   return gameAssets;
 };

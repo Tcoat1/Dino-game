@@ -1,39 +1,33 @@
-import { getgameAssets } from '../init/assets.js';
-import { clearStage, getStage, setStage } from '../models/stage.model.js';
+import { getStage, clearStage, setStage } from '../models/stage.model.js';
+import { getGameAssets } from '../init/assets.js';
+import calculateTotalScore from '../utils/calculateTotalScore.js';
+import { getUserItems, initializeItems } from '../models/item.model.js';
 
 export const gameStart = (uuid, payload) => {
-  const { stages } = getgameAssets();
-
+  const { stages } = getGameAssets();
   clearStage(uuid);
+  initializeItems(uuid);
   setStage(uuid, stages.data[0].id, payload.timestamp);
-  console.log('stage:', getStage(uuid));
-  return { status: 'sussess' };
+
+  return { status: 'success', handler: 2 };
 };
 
 export const gameEnd = (uuid, payload) => {
-  const { timestamp: ganeEndTime, score } = payload;
-  console.log(getStage(uuid));
+  const { timestamp: gameEndTime, score } = payload;
   const stages = getStage(uuid);
+  const userItems = getUserItems(uuid);
 
   if (!stages.length) {
     return { status: 'fail', message: 'No stages found for user' };
   }
 
-  let totalScore = 0;
-  stages.forEach((stage, index) => {
-    let stageEndTime;
-    if (index === stages.length - 1) {
-      stageEndTime = ganeEndTime;
-    } else {
-      stageEndTime = stages[index + 1].timestamp;
-    }
+  const totalScore = calculateTotalScore(stages, gameEndTime, false, userItems);
 
-    const stageDuration = (stageEndTime - stage.timestamp) / 1000;
-    totalScore += stageDuration;
-  });
-
-  if (Math.abs(score - totalScore) > 5) {
-    return { status: 'fail', message: 'Score Error' };
+  if (Math.abs(totalScore - score) > 1) {
+    return { status: 'fail', message: 'Score verification failed' };
   }
-  return { status: 'sussess', message: 'Gamd ended', score };
+  console.log(`totalScore: ${totalScore}`);
+  console.log(`score: ${score}`);
+
+  return { status: 'success', message: 'Game ended successfully', score, handler: 3 };
 };
